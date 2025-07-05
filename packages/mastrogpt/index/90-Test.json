@@ -7,5 +7,10 @@
     "name": "Demo",
     "url": "mastrogpt/demo"
    }
+   ,
+   {
+    "name": "Reverse",
+    "url": "imonaldi/reverse"
+   }
 
 ]
