@@ -8,5 +8,5 @@ def api(args):
     ch.add(f"user:{inp}")
     out = ch.complete()
   #TODO:E4.1 add streaming True
-  return { "output": out }
+  return { "output": out, "streaming": True }
   #END TODO
