@@ -1,4 +1,5 @@
 import vdb
+from vision2 import Vision
 
 USAGE = f"""Welcome to the Vector DB Loader.
 Write text to insert in the DB. 
@@ -7,11 +8,10 @@ Use `*<string>` to vector search the <string>  in the DB.
 Use `#<limit>`  to change the limit of searches.
 Use `!<substr>` to remove text with `<substr>` in collection.
 Use `!![<collection>]` to remove `<collection>` (default current) and switch to default.
+Use `img:<path>` to load an image and save its description.
 """
 
 def loader(args):
-  #print(args)
-  # get state: <collection>[:<limit>]
   collection = "default"
   limit = 30
   sp = args.get("state", "").split(":")
@@ -62,6 +62,26 @@ def loader(args):
   elif inp.startswith("!"):
     count = db.remove_by_substring(inp[1:])
     out = f"Deleted {count} records."    
+  # image input
+  elif inp.startswith("img:"):
+    path = inp[4:].strip()
+    print(f"Trying to open image at: {path}")
+    try:
+        from bucket import Bucket  # Import Bucket class
+        bucket = Bucket(args)
+        img_bytes = bucket.read(path)  # Read image from bucket
+        import base64
+        img_b64 = base64.b64encode(img_bytes).decode("utf-8")
+        vision = Vision(args)
+        description = vision.decode(img_b64)
+        print(description)
+        res = db.insert(description)
+        out = f"Inserted image description:\n{description}\n"
+        out += "\n".join([str(x) for x in res.get("ids", [])])
+        out += "\n"
+    except Exception as e:
+        out = f"Error loading image: {e}"
+        print(out)
   elif inp != '':
     out = "Inserted "
     lines = [inp]
@@ -74,4 +94,4 @@ def loader(args):
       out += "\n"
 
   return {"output": out, "state": f"{collection}:{limit}"}
-  
+
